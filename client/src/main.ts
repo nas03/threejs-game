@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import * as dat from "lil-gui";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -9,6 +10,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
+const gui = new dat.GUI();
 
 camera.position.z = 30;
 
@@ -26,10 +28,13 @@ pointLight.position.set(0, 20, 0);
 const ambientLight = new THREE.AmbientLight(0xffffff);
 scene.add(pointLight, ambientLight);
 
-const lightHelper = new THREE.PointLightHelper(pointLight);
+const lightHelper = new THREE.PointLightHelper(pointLight, 2);
 const gridHelper = new THREE.GridHelper(200, 50);
 const axesHelper = new THREE.AxesHelper(5);
 scene.add(lightHelper, gridHelper, axesHelper);
+
+// DEBUG
+gui.add(pointLight.position, "x");
 
 const controls = new OrbitControls(camera, renderer.domElement);
 function animate() {
