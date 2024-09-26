@@ -1,44 +1,61 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector("#bg") as HTMLCanvasElement,
-});
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-
-camera.position.z = 30;
-
-renderer.setAnimationLoop(animate);
 document.body.appendChild(renderer.domElement);
 
-const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
-const material = new THREE.MeshStandardMaterial({ color: 0xff6347 });
-const torus = new THREE.Mesh(geometry, material);
-scene.add(torus);
+let model;
+let controls = new OrbitControls(camera, renderer.domElement);
 
-const pointLight = new THREE.PointLight(0xffffff, 100);
-pointLight.position.set(0, 20, 0);
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+// Instantiate a loader
+const loader = new GLTFLoader();
+loader.load(
+  // model here
+  "clodsire/scene.gltf",
+  (gltf) => {
+    scene.add(gltf.scene);
+  },
+  (xhr) => {
+    console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+  },
+  (error) => {
+    console.error("An error happened", error);
+  }
+);
+// Adjust camera position
+camera.position.z = 150; // Adjust multiplier as needed
 
-const ambientLight = new THREE.AmbientLight(0xffffff);
-scene.add(pointLight, ambientLight);
+const topLight = new THREE.DirectionalLight(0xffffff, 1);
+topLight.position.set(500, 500, 500);
+topLight.castShadow = true;
+scene.add(topLight);
 
-const lightHelper = new THREE.PointLightHelper(pointLight);
-const gridHelper = new THREE.GridHelper(200, 50);
-const axesHelper = new THREE.AxesHelper(5);
-scene.add(lightHelper, gridHelper, axesHelper);
+const ambientLight = new THREE.AmbientLight(0x333333, 1);
+scene.add(ambientLight);
 
-const controls = new OrbitControls(camera, renderer.domElement);
 function animate() {
-  torus.rotation.x += 0.01;
-  torus.rotation.y += 0.005;
-  torus.rotation.z += 0.01;
-
-  controls.update();
+  requestAnimationFrame(animate);
   renderer.render(scene, camera);
 }
 
+window.addEventListener("resize", function () {
+  camera.aspect = window.innerWidth / this.window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(this.window.innerWidth, this.window.innerHeight);
+});
+
+document.onmousemove = (event) => {
+  mouseX = event.clientX;
+  mouseY = event.clientY;
+};
 animate();
+
+// Handle window resizing
